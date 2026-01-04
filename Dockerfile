@@ -32,7 +32,8 @@ USER root
 RUN set -e; \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        tigervnc-standalone-server \
+        xvfb \
+        x11vnc \
         fluxbox \
         supervisor \
         xterm \

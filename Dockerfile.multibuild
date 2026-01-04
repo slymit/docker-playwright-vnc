@@ -44,7 +44,8 @@ RUN useradd --create-home --shell /bin/bash --uid 1001 ${APP_USER} && \
 RUN set -e; \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        tigervnc-standalone-server \
+        xvfb \
+        x11vnc \
         fluxbox \
         supervisor \
         xterm \
