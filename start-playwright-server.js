@@ -9,6 +9,8 @@ const playwright = require('playwright');
   const headlessEnv = (process.env.PW_HEADLESS || 'false').toLowerCase();
   const runHeadless = headlessEnv === 'true';
 
+  const envArgs = process.env.PW_ARGS ? process.env.PW_ARGS.split(' ') : [];
+
   let browserLauncher;
   let browserDisplayName;
 
@@ -16,6 +18,9 @@ const playwright = require('playwright');
   let launchServerOptions = {
     headless: runHeadless,
     port: 3000,
+    args: [
+      ...envArgs
+    ],
     host: '0.0.0.0',
     wsPath: '/playwright'
     // The 'channel' property will be added here if 'google-chrome' is selected
