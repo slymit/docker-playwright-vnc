@@ -74,6 +74,7 @@ WORKDIR ${APP_HOME}
 RUN echo "===== Installing local Playwright library for ${APP_USER}...=====" && \
     npm config set cache /tmp/npm_cache_pwuser && \
     npm install playwright@${PW_VERSION} && \
+    npm install patchright@${PW_VERSION} && \
     echo "===== Cleaning up npm cache for ${APP_USER}... =====" && \
     rm -rf /tmp/* ~/.npm
 

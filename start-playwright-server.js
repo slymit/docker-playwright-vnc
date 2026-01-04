@@ -1,9 +1,23 @@
 // /home/pwuser/start-playwright-server.js
-const playwright = require('playwright');
 
 (async () => {
   // Read browser type from PW_BROWSER, default to 'chromium'
   const browserType = (process.env.PW_BROWSER || 'chromium').toLowerCase();
+
+  const usePatchright = (process.env.USE_PATCHRIGHT || 'false').toLowerCase() === 'true';
+
+  // Decide which module to require based on `USE_PATCHRIGHT` and browser type.
+  let playwright;
+  if (usePatchright && ['google-chrome', 'chrome', 'chromium'].includes(browserType)) {
+    playwright = require('patchright');
+    console.log(`USE_PATCHRIGHT=true and browser '${browserType}' detected — using 'patchright' module.`);
+  } else {
+    if (usePatchright) {
+      console.log('Patchright only patches CHROMIUM based browsers. Firefox and Webkit are not supported.');
+    }
+    playwright = require('playwright');
+    console.log(`Using 'playwright' module.`);
+  }
 
   // Read headless mode from PW_HEADLESS.
   const headlessEnv = (process.env.PW_HEADLESS || 'false').toLowerCase();
