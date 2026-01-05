@@ -66,6 +66,7 @@ RUN set -e; \
 
 # --- Application and Supervisor Setup ---
 COPY --chown=${APP_USER}:${APP_USER} supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY --chown=${APP_USER}:${APP_USER} --chmod=700 start-x11vnc.sh ${APP_HOME}/start-x11vnc.sh
 COPY --chown=${APP_USER}:${APP_USER} start-playwright-server.js ${APP_HOME}/start-playwright-server.js
 
 USER ${APP_USER}
