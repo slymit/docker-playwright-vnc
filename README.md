@@ -93,6 +93,7 @@ docker run -e PW_HEADLESS="true" -p 3000:3000 digitronik/playwright-vnc:latest
 ### Environment Variables
 - `PW_BROWSER`: Specify browser (`firefox`, `chromium`, `chrome`) 
 - `PW_HEADLESS`: Run in headless mode (`true`/`false`, default: `false`)
+- `PW_ARGS`: Specify browser arguments (use space as a separator, default: `<not set>`)
 
 ### Connecting with a VNC Client
 VNC will run at 5900 port. You can connect your favorite VNC client.
