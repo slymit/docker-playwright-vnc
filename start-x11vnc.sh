@@ -2,9 +2,9 @@
 set -e
 
 # Wrapper to create a VNC password file and exec x11vnc with -rfbauth
-# Reads X11VNC_PASSWORD (default: 'password')
+# Reads VNC_PASSWORD (default: 'password')
 
-PASS=${X11VNC_PASSWORD:-password}
+PASS=${VNC_PASSWORD:-password}
 PASSDIR=/home/pwuser/.vnc
 PASSFILE="$PASSDIR/passwd"
 
