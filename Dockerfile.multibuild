@@ -21,12 +21,12 @@ ENV PW_VERSION=${PLAYWRIGHT_VERSION} \
 # --- Image metadata labels ---
 LABEL org.opencontainers.image.title="Playwright with VNC" \
       org.opencontainers.image.description="Playwright browsers with VNC server for headed execution" \
-      org.opencontainers.image.url="https://github.com/digitronik/playwright-images" \
-      org.opencontainers.image.source="https://github.com/digitronik/playwright-images" \
+      org.opencontainers.image.url="https://github.com/slymit/docker-playwright-vnc" \
+      org.opencontainers.image.source="https://github.com/slymit/docker-playwright-vnc" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.created="${BUILD_DATE}" \
       org.opencontainers.image.revision="${VCS_REF}" \
-      org.opencontainers.image.vendor="digitronik" \
+      org.opencontainers.image.vendor="slymit" \
       playwright.version="${PLAYWRIGHT_VERSION}"
 
 # --- Configure dpkg to exclude docs and man pages ---
