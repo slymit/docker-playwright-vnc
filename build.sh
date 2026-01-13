@@ -4,7 +4,7 @@ set -e
 
 # Enhanced build script with version support
 DOCKERFILE="Dockerfile.multibuild"
-IMAGE_REPO="${IMAGE_REPO:-digitronik/playwright-vnc}"
+IMAGE_REPO="${IMAGE_REPO:-slymit/playwright-vnc}"
 
 # Version handling
 PLAYWRIGHT_VERSION=""
@@ -31,7 +31,7 @@ while [[ $# -gt 0 ]]; do
             echo "Options:"
             echo "  --playwright-version VERSION  Use specific Playwright version"
             echo "  --latest                      Also tag as latest"
-            echo "  --repo REPO                   Docker repository (default: digitronik/playwright-vnc)"
+            echo "  --repo REPO                   Docker repository (default: slymit/playwright-vnc)"
             echo "  --help                        Show this help"
             echo ""
             echo "Browser targets: firefox, chromium, chrome, all (default: all if none specified)"
