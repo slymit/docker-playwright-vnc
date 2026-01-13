@@ -76,7 +76,7 @@ targets["all"]="all"
 # Build metadata
 BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 VCS_REF=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
-VERSION="pw-${PLAYWRIGHT_VERSION}"
+VERSION=$(git describe --exact-match --tags HEAD 2>/dev/null || git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
 echo "🚀 Starting Docker image build process..."
 echo "📋 Build Configuration:"
@@ -99,12 +99,12 @@ build_and_tag() {
     local target="$1"
     local tag_suffix="$2"
     
-    # Tagging strategy: <browser-name>-<playwright-version> or just <playwright-version> for 'all'
+    # Tagging strategy: <image-version>-<browser-name> or just <image-version> for 'all'
     local primary_tag
     if [ "$target" = "all" ]; then
-        primary_tag="${IMAGE_REPO}:${PLAYWRIGHT_VERSION}"
+        primary_tag="${IMAGE_REPO}:${VERSION}"
     else
-        primary_tag="${IMAGE_REPO}:${tag_suffix}-${PLAYWRIGHT_VERSION}"
+        primary_tag="${IMAGE_REPO}:${VERSION}-${tag_suffix}"
     fi
     
     echo ""
@@ -137,7 +137,7 @@ build_and_tag() {
         echo "🏷️ Tagged as: ${latest_tag} (all browsers)"
     else
         # For specific browsers, create browser-specific latest tag
-        local latest_tag="${IMAGE_REPO}:${tag_suffix}-latest"
+        local latest_tag="${IMAGE_REPO}:${tag_suffix}"
         docker tag "${primary_tag}" "${latest_tag}"
         tags_created+=("${latest_tag}")
         echo "🏷️ Tagged as: ${latest_tag}"
