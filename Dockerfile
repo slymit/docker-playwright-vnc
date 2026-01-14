@@ -9,6 +9,8 @@ ENV PW_HEADLESS="false"
 ENV DISPLAY=:1
 ENV VNC_PORT=5900
 ENV NOVNC_PORT=6900
+ENV NOVNC_VERSION=1.6.0
+ENV WEBSOCKIFY_VERSION=0.13.0
 
 ENV APP_USER=pwuser
 ENV APP_HOME=/home/${APP_USER}
@@ -50,8 +52,8 @@ RUN set -e; \
     && \
     echo "===== Installing noVNC and websockify... =====" && \
     mkdir -p /opt/noVNC/utils/websockify && \
-    wget -qO- https://github.com/novnc/noVNC/archive/refs/tags/v1.6.0.tar.gz | tar xz --strip 1 -C /opt/noVNC && \
-    wget -qO- https://github.com/novnc/websockify/archive/refs/tags/v0.13.0.tar.gz | tar xz --strip 1 -C /opt/noVNC/utils/websockify && \
+    wget -qO- https://github.com/novnc/noVNC/archive/refs/tags/v${NOVNC_VERSION}.tar.gz | tar xz --strip 1 -C /opt/noVNC && \
+    wget -qO- https://github.com/novnc/websockify/archive/refs/tags/v${WEBSOCKIFY_VERSION}.tar.gz | tar xz --strip 1 -C /opt/noVNC/utils/websockify && \
     ln -s /opt/noVNC/vnc_lite.html /opt/noVNC/index.html && \
     echo "===== Downloading and installing Google Chrome Stable from .deb...=====" && \
     wget -O /tmp/google-chrome-stable_current_amd64.deb "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb" && \
