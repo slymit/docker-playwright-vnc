@@ -53,16 +53,10 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Auto-detect Playwright version if not specified
+# Auto-detect Playwright version from Dockerfile if not specified
 if [ -z "$PLAYWRIGHT_VERSION" ]; then
-    echo "🔍 Auto-detecting latest Playwright version..."
-    if [ -f "scripts/get-playwright-version.sh" ]; then
-        PLAYWRIGHT_VERSION=$(scripts/get-playwright-version.sh latest)
-        echo "📦 Detected Playwright version: $PLAYWRIGHT_VERSION"
-    else
-        echo "⚠️ Warning: Version detection script not found, using default version from Dockerfile"
-        PLAYWRIGHT_VERSION="1.52.0"  # Fallback
-    fi
+    PLAYWRIGHT_VERSION=$(grep "ARG PLAYWRIGHT_VERSION=" ${DOCKERFILE} | cut -d'=' -f2)
+    echo "📦 Using the default Playwright version provided in the Dockerfile: $PLAYWRIGHT_VERSION"
 fi
 
 # Define all build targets. The key is the target name in the Dockerfile,
