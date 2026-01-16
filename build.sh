@@ -7,12 +7,17 @@ DOCKERFILE="Dockerfile.multibuild"
 IMAGE_REPO="${IMAGE_REPO:-slymit/playwright-vnc}"
 
 # Version handling
+VERSION=""
 PLAYWRIGHT_VERSION=""
 USE_LATEST_TAG=false
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
+        --version)
+            VERSION="$2"
+            shift 2
+            ;;
         --playwright-version)
             PLAYWRIGHT_VERSION="$2"
             shift 2
@@ -29,6 +34,7 @@ while [[ $# -gt 0 ]]; do
             echo "Usage: $0 [options] [browser-targets...]"
             echo ""
             echo "Options:"
+            echo "  --version VERSION             Specify the version of the docker image"
             echo "  --playwright-version VERSION  Use specific Playwright version"
             echo "  --latest                      Also tag as latest"
             echo "  --repo REPO                   Docker repository (default: slymit/playwright-vnc)"
@@ -70,7 +76,9 @@ targets["all"]="all"
 # Build metadata
 BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 VCS_REF=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
-VERSION=$(git describe --exact-match --tags HEAD 2>/dev/null || git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+if [ -z "$VERSION" ]; then
+    VERSION=$(git describe --exact-match --tags HEAD 2>/dev/null || git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+fi
 
 echo "🚀 Starting Docker image build process..."
 echo "📋 Build Configuration:"
