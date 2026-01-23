@@ -6,6 +6,12 @@ This project solves that problem by providing a lightweight, VNC-enabled environ
 
 These images are built from the ground up on a slim Debian base (node:22-bookworm-slim) to be as optimized as possible while still providing a full graphical environment.
 
+This project is a fork of the [RedHatQE/playwright-images](https://github.com/RedHatQE/playwright-images) repository with several key improvements:
+
+- Replaced Xvnc with x11vnc;
+- Added native noVNC support;
+- Integrated [Patchright](https://github.com/Kaliiiiiiiiii-Vinyzu/patchright) for Chromium-based browsers.
+
 ## Key Features
 - VNC Server Built-in: Connect with any VNC client to view and interact with the browser.
 - Headed Mode by Default: Designed specifically for running browsers with their UI visible.
@@ -14,42 +20,35 @@ These images are built from the ground up on a slim Debian base (node:22-bookwor
 - Optimized for Size: Multi-stage Dockerfile and careful package selection to keep images lean.
 - Configurable: Control the browser type and headless mode at runtime with environment variables.
 - Single Source: Manage all image variants from a single, easy-to-maintain Dockerfile.multibuild.
-- Automated Builds: Daily CI/CD pipeline builds latest Playwright versions automatically.
 
 ## 🎭 Latest Release
 
-<!-- RELEASE_INFO_START -->
-<!-- RELEASE_INFO_START -->
-**Current Playwright Version:** `1.57.0`  
-**Released:** 2025-11-26 06:40 UTC  
+See [Docker Hub](https://hub.docker.com/r/slymit/playwright-vnc/tags)
 
 ### 🐳 Available Images
-- `digitronik/playwright-vnc:latest` (all browsers)
-- `digitronik/playwright-vnc:firefox-latest`
-- `digitronik/playwright-vnc:chromium-latest`
-- `digitronik/playwright-vnc:chrome-latest`
+- `slymit/playwright-vnc:latest` (all browsers)
+- `slymit/playwright-vnc:firefox`
+- `slymit/playwright-vnc:chromium`
+- `slymit/playwright-vnc:chrome`
 
 ### 📦 Version-Specific Tags
-- `digitronik/playwright-vnc:1.57.0`
-- `digitronik/playwright-vnc:firefox-1.57.0`
-- `digitronik/playwright-vnc:chromium-1.57.0`
-- `digitronik/playwright-vnc:chrome-1.57.0`
+- `slymit/playwright-vnc:1.0.0`
+- `slymit/playwright-vnc:1.0.0-firefox`
+- `slymit/playwright-vnc:1.0.0-chromium`
+- `slymit/playwright-vnc:1.0.0-chrome`
 
 ### 🚀 Quick Start
 ```bash
 # Run with all browsers available
-docker run -p 5900:5900 -p 3000:3000 digitronik/playwright-vnc:latest
+docker run -p 5900:5900 -p 6900:6900 -p 3000:3000 slymit/playwright-vnc:latest
 
 # Connect via VNC
 vncviewer localhost:5900
 ```
 
-*Last updated: 2025-11-26 06:40 UTC (automated)*
-<!-- RELEASE_INFO_END -->
+Connect via noVNC: http://localhost:6900/
 
 ## How to Build the Images (Local Development)
-
-**Note:** Images are automatically built daily via GitHub Actions. For local development:
 
 ```bash
 # Build latest Playwright version (all browsers)
@@ -70,9 +69,9 @@ vncviewer localhost:5900
 | Image Tag | Default Browser | Installed Browsers |
 | :--- | :--- | :--- |
 | `:latest` | Chromium | All browsers (Firefox, Chromium, Chrome) |
-| `:firefox-latest` | Firefox | Playwright's Firefox |
-| `:chromium-latest`| Chromium | Playwright's Chromium |
-| `:chrome-latest` | Google Chrome | Google Chrome (Stable) |
+| `:firefox` | Firefox | Playwright's Firefox |
+| `:chromium`| Chromium | Playwright's Chromium |
+| `:chrome` | Google Chrome | Google Chrome (Stable) |
 
 
 ## How to Run the Images
@@ -81,13 +80,13 @@ Use docker/podman to start a container. Map VNC port (5900) and Playwright serve
 
 ```bash
 # Run specific browser image
-docker run -p 5900:5900 -p 3000:3000 digitronik/playwright-vnc:firefox-latest
+docker run -p 5900:5900 -p 3000:3000 slymit/playwright-vnc:firefox
 
 # Run all-browsers image with specific browser selection
-docker run -e PW_BROWSER="chrome" -p 5900:5900 -p 3000:3000 digitronik/playwright-vnc:latest
+docker run -e PW_BROWSER="chrome" -p 5900:5900 -p 3000:3000 slymit/playwright-vnc:latest
 
 # Run in headless mode  
-docker run -e PW_HEADLESS="true" -p 3000:3000 digitronik/playwright-vnc:latest
+docker run -e PW_HEADLESS="true" -p 3000:3000 slymit/playwright-vnc:latest
 ```
 
 ### Environment Variables
@@ -102,6 +101,8 @@ VNC will run at 5900 port. You can connect your favorite VNC client.
 ```
 vncviewer localhost:5900 
 ```
+
+noVNC will run on port 6900 at http://localhost:6900/
 
 ## Connecting with a Playwright Client
 - Connecting to a Chromium or Google Chrome Server
