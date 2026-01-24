@@ -1,15 +1,11 @@
 name: 🎭 Playwright Auto Build & Deploy
 
 on:
-  schedule:
-    # Run daily at 06:00 UTC
-    - cron: '0 6 * * *'
+  push:
+    tags:
+      - '*'
   workflow_dispatch:
     inputs:
-      playwright_version:
-        description: 'Specific Playwright version to build (e.g., 1.55.0)'
-        required: false
-        type: string
       force_build:
         description: 'Force build even if version already exists'
         required: false
@@ -18,14 +14,13 @@ on:
 
 env:
   REGISTRY: docker.io
-  IMAGE_NAME: digitronik/playwright-vnc
+  IMAGE_NAME: slymit/playwright-vnc
 
 jobs:
   check-and-build:
     runs-on: ubuntu-latest
     outputs:
       version-built: ${{ steps.version-check.outputs.version-built }}
-      playwright-version: ${{ steps.version-check.outputs.playwright-version }}
     
     steps:
       - name: Checkout repository
@@ -34,31 +29,27 @@ jobs:
       - name: Determine Playwright version to build
         id: version-check
         run: |
-          if [ -n "${{ github.event.inputs.playwright_version }}" ]; then
-            # Manual trigger with specific version
-            VERSION="${{ github.event.inputs.playwright_version }}"
-            echo "📌 Manual build requested for Playwright v${VERSION}"
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            VERSION="${{ github.ref_name }}"
           else
-            # Auto-detect latest version
-            VERSION=$(./scripts/get-playwright-version.sh latest)
-            echo "🔍 Latest Playwright version: ${VERSION}"
+            VERSION=$(echo ${{ github.sha }} | cut -c1-7)
           fi
           
-          echo "playwright-version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "image-version=${VERSION}" >> $GITHUB_OUTPUT
           
           # Check if this version already exists on Docker Hub (unless force_build is true)
           if [ "${{ github.event.inputs.force_build }}" != "true" ]; then
-            echo "🔍 Checking if images already exist for v${VERSION}..."
+            echo "🔍 Checking if images with ${VERSION} already exist..."
             
             # Check if the main image exists
             if docker manifest inspect ${IMAGE_NAME}:${VERSION} >/dev/null 2>&1; then
-              echo "ℹ️ Images for Playwright v${VERSION} already exist. Skipping build."
+              echo "ℹ️ Images with ${VERSION} already exist. Skipping build."
               echo "version-built=false" >> $GITHUB_OUTPUT
               exit 0
             fi
           fi
           
-          echo "🚀 Building images for Playwright v${VERSION}"
+          echo "🚀 Building images with ${VERSION}"
           echo "version-built=true" >> $GITHUB_OUTPUT
 
       - name: Set up Docker Buildx
@@ -76,20 +67,18 @@ jobs:
       - name: Build Docker images
         if: steps.version-check.outputs.version-built == 'true'
         run: |
-          VERSION="${{ steps.version-check.outputs.playwright-version }}"
+          VERSION="${{ steps.version-check.outputs.image-version }}"
           
-          echo "🏗️ Building all browser variants for Playwright v${VERSION}"
+          echo "🏗️ Building all browser variants..."
           
           # Build all variants
-          ./build.sh --playwright-version "${VERSION}" --latest --repo "${{ env.IMAGE_NAME }}"
+          ./build.sh --version "${VERSION}" --latest --repo "${{ env.IMAGE_NAME }}"
           
           echo "✅ All images built successfully"
 
       - name: Push Docker images to Docker Hub
         if: steps.version-check.outputs.version-built == 'true'
         run: |
-          VERSION="${{ steps.version-check.outputs.playwright-version }}"
-          
           echo "🚀 Pushing all images to Docker Hub..."
           
           # Push all tags for this repository
@@ -101,14 +90,14 @@ jobs:
       - name: Test images
         if: steps.version-check.outputs.version-built == 'true'
         run: |
-          VERSION="${{ steps.version-check.outputs.playwright-version }}"
+          VERSION="${{ steps.version-check.outputs.image-version }}"
           
           echo "🧪 Testing built images..."
           
           # Test each variant can be pulled
           for variant in firefox chromium chrome; do
-            echo "Testing ${IMAGE_NAME}:${variant}-${VERSION}"
-            docker run --rm "${IMAGE_NAME}:${variant}-${VERSION}" /bin/bash -c "echo 'Image ${variant} OK'"
+            echo "Testing ${IMAGE_NAME}:${VERSION}-${variant}"
+            docker run --rm "${IMAGE_NAME}:${VERSION}-${variant}" /bin/bash -c "echo 'Image ${variant} OK'"
           done
           
           # Test all-browsers image
@@ -117,107 +106,20 @@ jobs:
           
           echo "✅ All image tests passed"
 
-      - name: Update README with latest release info
-        if: steps.version-check.outputs.version-built == 'true'
-        run: |
-          VERSION="${{ steps.version-check.outputs.playwright-version }}"
-          CURRENT_DATE=$(date -u "+%Y-%m-%d %H:%M UTC")
-          
-          echo "📝 Updating README with Playwright v${VERSION} info..."
-          
-          # Create the new release info section
-          cat > release_info_new.md << EOF
-          **Current Playwright Version:** \`${VERSION}\`  
-          **Released:** ${CURRENT_DATE}  
-
-          ### 🐳 Available Images
-          - \`digitronik/playwright-vnc:latest\` (all browsers)
-          - \`digitronik/playwright-vnc:firefox-latest\`
-          - \`digitronik/playwright-vnc:chromium-latest\`
-          - \`digitronik/playwright-vnc:chrome-latest\`
-
-          ### 📦 Version-Specific Tags
-          - \`digitronik/playwright-vnc:${VERSION}\`
-          - \`digitronik/playwright-vnc:firefox-${VERSION}\`
-          - \`digitronik/playwright-vnc:chromium-${VERSION}\`
-          - \`digitronik/playwright-vnc:chrome-${VERSION}\`
-
-          ### 🚀 Quick Start
-          \`\`\`bash
-          # Run with all browsers available
-          docker run -p 5900:5900 -p 3000:3000 digitronik/playwright-vnc:latest
-
-          # Connect via VNC
-          vncviewer localhost:5900
-          \`\`\`
-
-          *Last updated: ${CURRENT_DATE} (automated)*
-          EOF
-          
-          # Replace the section in README.md
-          # First, extract everything before the start marker
-          sed -n '1,/<!-- RELEASE_INFO_START -->/p' README.md > readme_temp.md
-          
-          # Add the start marker and new content
-          echo "<!-- RELEASE_INFO_START -->" >> readme_temp.md
-          cat release_info_new.md >> readme_temp.md
-          echo "<!-- RELEASE_INFO_END -->" >> readme_temp.md
-          
-          # Add everything after the end marker
-          sed -n '/<!-- RELEASE_INFO_END -->/,$p' README.md | tail -n +2 >> readme_temp.md
-          
-          # Replace the original README
-          mv readme_temp.md README.md
-          
-          # Cleanup
-          rm -f release_info_new.md
-          
-          echo "✅ README updated with latest release info"
-
-      - name: Commit and push README changes
-        if: steps.version-check.outputs.version-built == 'true'
-        run: |
-          VERSION="${{ steps.version-check.outputs.playwright-version }}"
-          
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          
-          if git diff --quiet README.md; then
-            echo "ℹ️ No changes to README"
-          else
-            git add README.md
-            git commit -m "docs: Update README with Playwright v${VERSION} release info
-
-            🎭 Playwright v${VERSION} Images Available
-            
-            ✅ New Docker images:
-            - digitronik/playwright-vnc:${VERSION}
-            - digitronik/playwright-vnc:firefox-${VERSION}
-            - digitronik/playwright-vnc:chromium-${VERSION}
-            - digitronik/playwright-vnc:chrome-${VERSION}
-            
-            🤖 Automated update via GitHub Actions"
-            
-            git push
-            echo "✅ README changes committed and pushed"
-          fi
-
       - name: Summary
         if: always()
         run: |
-          VERSION="${{ steps.version-check.outputs.playwright-version }}"
+          VERSION="${{ steps.version-check.outputs.image-version }}"
           
           if [ "${{ steps.version-check.outputs.version-built }}" == "true" ]; then
             echo "🎉 SUCCESS: Playwright v${VERSION} images built and deployed!"
             echo ""
             echo "📦 Available images:"
-            echo "   - digitronik/playwright-vnc:latest"
-            echo "   - digitronik/playwright-vnc:${VERSION}"
-            echo "   - digitronik/playwright-vnc:firefox-${VERSION}"
-            echo "   - digitronik/playwright-vnc:chromium-${VERSION}" 
-            echo "   - digitronik/playwright-vnc:chrome-${VERSION}"
-            echo ""
-            echo "📝 README updated automatically"
+            echo "   - slymit/playwright-vnc:latest"
+            echo "   - slymit/playwright-vnc:${VERSION}"
+            echo "   - slymit/playwright-vnc:${VERSION}-firefox"
+            echo "   - slymit/playwright-vnc:${VERSION}-chromium" 
+            echo "   - slymit/playwright-vnc:${VERSION}-chrome"
           else
-            echo "ℹ️ No build needed - Playwright v${VERSION} images already exist"
+            echo "ℹ️ No build needed - images with ${VERSION} already exist"
           fi
