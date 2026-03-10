@@ -23,7 +23,7 @@ This project is a fork of the [RedHatQE/playwright-images](https://github.com/Re
 
 ## 🎭 Latest Release
 
-See [Docker Hub](https://hub.docker.com/r/slymit/playwright-vnc/tags)
+The images can be found on [Docker Hub](https://hub.docker.com/r/slymit/playwright-vnc/tags)
 
 ### 🐳 Available Images
 - `slymit/playwright-vnc:latest` (all browsers)
